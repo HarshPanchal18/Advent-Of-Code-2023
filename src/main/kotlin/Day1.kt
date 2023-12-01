@@ -24,7 +24,7 @@ Consider your entire calibration document. What is the sum of all the calibratio
 
 class Day1(private val input: List<String>) {
 
-    /*private val words = mapOf(
+    private val words = mapOf(
         "one" to 1,
         "two" to 2,
         "three" to 3,
@@ -33,12 +33,32 @@ class Day1(private val input: List<String>) {
         "six" to 6,
         "seven" to 7,
         "eight" to 8,
-        "nine" to 9,
-        "zero" to 0,
-    )*/
+        "nine" to 9
+    )
 
     fun solution1(): Int {
         return input.sumOf { calibrationValue(it) }
+    }
+
+    fun solution2(): Int {
+        return input.sumOf { row ->
+            // Run through each character and turn it into a digit or a null,
+            // and then map each of them to a String. In theory, we could take
+            // the first and last digits from the resulting list instead of joining.
+            calibrationValue(
+                // Returning a list containing only the non-null results of applying the given transform function to each character and its index in the original char sequence.
+                row.mapIndexedNotNull { index, ch ->
+                    // if ch is already digit, take it as is.
+                    if (ch.isDigit())
+                        ch
+                    else // Otherwise, see if this is the start of a word and if so map to the digit that it represents.
+                        row.possibleWordsAt(index).firstNotNullOfOrNull { candidate ->
+                            // Returning the first non-null value produced by transform function being applied to elements of this collection in iteration order, or null if no non-null value was produced.
+                            words[candidate]
+                        }
+                }.joinToString()
+            )
+        }
     }
 
     private fun String.possibleWordsAt(position: Int): List<String> {
@@ -1059,6 +1079,6 @@ fun main() {
     )
 
     val day1 = Day1(input)
-
-    print(day1.solution1())
+    println(day1.solution1())
+    println(day1.solution2())
 }
