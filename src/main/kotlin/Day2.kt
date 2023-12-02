@@ -37,6 +37,10 @@ class Day2(input: List<String>) {
         }.sumOf { it.id }
     }
 
+    fun solution2(): Int {
+        return games.sumOf { it.power() }
+    }
+
     private data class Game(
         val id: Int,
         val red: Int,
@@ -46,6 +50,8 @@ class Day2(input: List<String>) {
         fun isPossible(red: Int, green: Int, blue: Int): Boolean {
             return this.red <= red && this.green <= green && this.blue <= blue
         }
+
+        fun power(): Int = red * green * blue
 
         companion object {
             fun of(input: String): Game {
@@ -171,5 +177,6 @@ fun main() {
     )
 
     val day2 = Day2(input)
-    print(day2.solution1())
+    println(day2.solution1())
+    println(day2.solution2())
 }
