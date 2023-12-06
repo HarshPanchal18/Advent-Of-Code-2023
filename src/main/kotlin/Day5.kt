@@ -2,6 +2,7 @@ import java.io.File
 import kotlin.math.max
 import kotlin.math.min
 
+
 /*
 --- Day 5: If You Give A Seed A Fertilizer ---
 You take the boat and find the gardener right where you were told he would be: managing a giant "garden" that looks more to you like a farm.
@@ -90,6 +91,18 @@ Seed 13, soil 13, fertilizer 52, water 41, light 34, temperature 34, humidity 35
 So, the lowest location number in this example is 35.
 
 What is the lowest location number that corresponds to any of the initial seed numbers?
+
+--- Part Two ---
+Everyone will starve if you only plant such a small number of seeds. Re-reading the almanac, it looks like the seeds: line actually describes ranges of seed numbers.
+The values on the initial seeds: line come in pairs. Within each pair, the first value is the start of the range and the second value is the length of the range. So, in the first line of the example above:
+
+seeds: 79 14 55 13
+
+This line describes two ranges of seed numbers to be planted in the garden. The first range starts with seed number 79 and contains 14 values: 79, 80, ..., 91, 92. The second range starts with seed number 55 and contains 13 values: 55, 56, ..., 66, 67.
+Now, rather than considering four seed numbers, you need to consider a total of 27 seed numbers.
+In the above example, the lowest location number can be obtained from seed number 82, which corresponds to soil 84, fertilizer 84, water 84, light 77, temperature 45, humidity 46, and location 46. So, the lowest location number is 46.
+Consider all the initial seed numbers listed in the ranges on the first line of the almanac. What is the lowest location number that corresponds to any of the initial seed numbers?
+
 */
 
 class Day5(private val input: List<String>) {
@@ -140,6 +153,55 @@ class Day5(private val input: List<String>) {
         return seedRange
     }
 
+    private fun transformRange2(seedRange: SeedRange, section: Section): List<SeedRange> {
+        val matches = section.ranges.filter {
+            max(seedRange.start, it.sourceStart) <=
+                    min(seedRange.start + seedRange.length - 1, it.sourceStart + it.length - 1)
+        }
+
+        if (!matches.any())
+            return listOf(seedRange)
+
+        return matches.map { match ->
+            val offset = match.destinationStart - match.sourceStart
+            val left = max(seedRange.start, match.sourceStart)
+            val right = min(seedRange.start + seedRange.length - 1, match.sourceStart + match.length - 1)
+            SeedRange(left + offset, (right - left) + 1)
+        }
+    }
+
+    fun solution2() {
+        val seedRanges = input[0].substringAfter(": ")
+            .split(' ').map { it.toLong() }
+            .chunked(2) // Splits this collection into a list of lists each not exceeding 2
+            .map { SeedRange(it[0], it[1] - 1) }
+
+        val sections = input
+            .flatMapIndexed { index: Int, x: String ->
+                when {
+                    index == 0 || index == input.lastIndex -> listOf(index)
+                    x.isEmpty() -> listOf(index - 1, index + 1)
+                    else -> emptyList()
+                }
+            }
+            .chunked(2) { (from, to) -> input.slice(from..to) }
+            .drop(1)
+            .map { lines ->
+                val titleSplit = lines[0].split('-', ' ')
+                val ranges = lines.drop(1).map { line ->
+                    val split = line.split(' ').map { it.toLong() }
+                    SectionRange(split[0], split[1], split[2])
+                }
+                Section(titleSplit[0], titleSplit[2], ranges)
+            }
+
+        var eligibleSeedsRanges = seedRanges
+        for (section in sections)
+            eligibleSeedsRanges = eligibleSeedsRanges.map { transformRange2(it, section) }.flatten()
+
+        val result = eligibleSeedsRanges.minOf { it.start }
+        println(result)
+    }
 }
 
 data class SeedRange(val start: Long, val length: Long)
@@ -149,4 +211,5 @@ data class SectionRange(val destinationStart: Long, val sourceStart: Long, val l
 fun main() {
     val fileInput: List<String> = File("src/main/kotlin/inputs/Day5.txt").readLines()
     Day5(fileInput).solution1()
+    Day5(fileInput).solution2()
 }
