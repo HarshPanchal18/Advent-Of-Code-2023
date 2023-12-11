@@ -197,7 +197,25 @@ class Day10(input: List<String>) {
     private val grid = input.map { it.toCharArray() }
 
     fun solution1(): Int {
-        return ceil(getLoop().size/2.0).toInt()
+        return ceil(getLoop().size / 2.0).toInt()
+    }
+
+    fun solution2(): Int {
+        val loop = getLoop()
+        val pipes = "|LJS"
+        var count = 0
+
+        for (y in grid.indices) {
+            var inside = false
+            for (x in grid.first().indices) {
+                if (Point2D(x, y) in loop && grid[y][x] in pipes)
+                    inside = !inside
+                if (Point2D(x, y) !in loop && inside)
+                    count++
+            }
+        }
+
+        return count
     }
 
     private fun getLoop(): Set<Point2D> {
@@ -253,4 +271,5 @@ data class Point2D(val x: Int, val y: Int) {
 fun main() {
     val fileInput: List<String> = File("src/main/kotlin/inputs/Day10.txt").readLines()
     println(Day10(fileInput).solution1())
+    println(Day10(fileInput).solution2())
 }
