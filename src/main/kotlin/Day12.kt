@@ -57,6 +57,31 @@ In this example, the number of possible arrangements for each row is:
 Adding all of the possible arrangement counts together produces a total of 21 arrangements.
 For each row, count all of the different arrangements of operational and broken springs that meet the given criteria. What is the sum of those counts?
 
+
+--- Part Two ---
+As you look out at the field of springs, you feel like there are way more springs than the condition records list. When you examine the records, you discover that they were actually folded up this whole time!
+
+To unfold the records, on each row, replace the list of spring conditions with five copies of itself (separated by ?) and replace the list of contiguous groups of damaged springs with five copies of itself (separated by ,).
+
+So, this row:
+.# 1
+
+Would become:
+.#?.#?.#?.#?.# 1,1,1,1,1
+
+The first line of the above example would become:
+???.###????.###????.###????.###????.### 1,1,3,1,1,3,1,1,3,1,1,3,1,1,3
+
+In the above example, after unfolding, the number of possible arrangements for some rows is now much larger:
+???.### 1,1,3 - 1 arrangement
+.??..??...?##. 1,1,3 - 16384 arrangements
+?#?#?#?#?#?#?#? 1,3,1,6 - 1 arrangement
+????.#...#... 4,1,1 - 16 arrangements
+????.######..#####. 1,6,5 - 2500 arrangements
+?###???????? 3,2,1 - 506250 arrangements
+After unfolding, adding all of the possible arrangement counts together produces 525152.
+
+Unfold your condition records; what is the new sum of possible arrangement counts?
 */
 
 class Day12(val input: List<String>) {
@@ -97,9 +122,51 @@ class Day12(val input: List<String>) {
         return count
     }
 
+    fun solution2() {
+        var records = input.map { line ->
+            val split = line.split(' ')
+            Record(split[0], split[1].split(',').map { Integer.parseInt(it) })
+        }
+
+        records = records.map {
+            Record(
+                conditions = it.conditions + "?" + it.conditions + "?" + it.conditions + "?" + it.conditions + "?" + it.conditions,
+                groups = listOf(it.groups, it.groups, it.groups, it.groups, it.groups).flatten()
+            )
+        }
+
+        val sum = records.withIndex().sumOf { calculate2(it.value.conditions, it.value.groups) }
+        println(sum)
+    }
+
+    private val cache = hashMapOf<Pair<String, List<Int>>, Long>()
+    private fun calculate2(conditions: String, groups: List<Int>): Long {
+        return cache.getOrPut(conditions to groups) {
+            var count = 0L
+            val reservedEndBits = groups.sum() + groups.size - 1
+            for (i in 0..conditions.length - reservedEndBits) {
+                if ((0..<i).any { conditions[it] == '#' })
+                    continue
+                else if (i + groups.first() < conditions.length && conditions[i + groups.first()] == '#')
+                    continue
+
+                if (conditions.substring(i, i + groups.first()).all { it == '#' || it == '?' }) {
+                    if (groups.size == 1 && ((i + groups.first())..<conditions.length).any { conditions[it] == '#' })
+                        continue
+
+                    if (groups.size == 1)
+                        count++
+                    else
+                        count += calculate2(conditions.substring(i + groups.first() + 1), groups.drop(1))
+                }
+            }
+            count
+        }
+    }
 }
 
 fun main() {
     val fileInput: List<String> = File("src/main/kotlin/inputs/Day12.txt").readLines()
     Day12(fileInput).solution1()
+    Day12(fileInput).solution2()
 }
