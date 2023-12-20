@@ -3,6 +3,7 @@ import Direction.RIGHT
 import Direction.LEFT
 import Direction.UP
 import Direction.DOWN
+import kotlin.math.absoluteValue
 
 /*
 --- Day 16: The Floor Will Be Lava ---
@@ -100,6 +101,7 @@ enum class Direction(val move: Point) {
 data class Point(val x: Int, val y: Int) {
     operator fun plus(other: Point) = copy(x = x + other.x, y = y + other.y)
     operator fun plus(other: Direction) = plus(other.move)
+    fun distanceTo(other: Point) = (x - other.x).absoluteValue + (y - other.y).absoluteValue
 }
 
 private typealias DirectedPoint = Pair<Point, Direction>
