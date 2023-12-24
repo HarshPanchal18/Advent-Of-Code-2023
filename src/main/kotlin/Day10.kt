@@ -239,17 +239,6 @@ class Day10(input: List<String>) {
 
 }
 
-data class Point2D(val x: Int, val y: Int) {
-    fun neighbours(): List<Point2D> {
-        return listOf(
-            Point2D(x - 1, y),
-            Point2D(x + 1, y),
-            Point2D(x, y - 1),
-            Point2D(x, y + 1),
-        )
-    }
-}
-
 fun main() {
     val fileInput: List<String> = File("src/main/kotlin/inputs/Day10.txt").readLines()
     println(Day10(fileInput).solution1())

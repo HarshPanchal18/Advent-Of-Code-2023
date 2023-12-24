@@ -1,9 +1,5 @@
+import Direction.*
 import java.io.File
-import Direction.RIGHT
-import Direction.LEFT
-import Direction.UP
-import Direction.DOWN
-import kotlin.math.absoluteValue
 
 /*
 --- Day 16: The Floor Will Be Lava ---
@@ -96,30 +92,6 @@ enum class Direction(val move: Point) {
     DOWN(move = Point(0, 1)),
     LEFT(move = Point(-1, 0)),
     RIGHT(move = Point(1, 0));
-}
-
-data class Point(val x: Int, val y: Int) {
-    operator fun plus(other: Point) = copy(x = x + other.x, y = y + other.y)
-    operator fun plus(other: Direction) = plus(other.move)
-    fun distanceTo(other: Point) = (x - other.x).absoluteValue + (y - other.y).absoluteValue
-
-    fun orthogonalNeighbours() = setOf(
-        copy(x = x - 1),
-        copy(x = x + 1),
-        copy(y = y - 1),
-        copy(y = y + 1),
-    )
-
-    fun neighbours() = setOf(
-        copy(y = y - 1),
-        copy(x = x + 1, y = y - 1),
-        copy(x = x + 1),
-        copy(x = x + 1, y = y + 1),
-        copy(y = y + 1),
-        copy(x = x - 1, y = y + 1),
-        copy(x = x - 1),
-        copy(x = x - 1, y = y - 1),
-    )
 }
 
 private typealias DirectedPoint = Pair<Point, Direction>
