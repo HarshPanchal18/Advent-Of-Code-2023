@@ -105,6 +105,17 @@ Brick G can be disintegrated; it does not support any other bricks.
 So, in this example, 5 bricks can be safely disintegrated.
 
 Figure how the blocks will settle based on the snapshot. Once they've settled, consider disintegrating a single brick; how many bricks could be safely chosen as the one to get disintegrated?
+
+--- Part Two ---
+Disintegrating bricks one at a time isn't going to be fast enough. While it might sound dangerous, what you really need is a chain reaction.
+You'll need to figure out the best brick to disintegrate. For each brick, determine how many other bricks would fall if that brick were disintegrated.
+
+Using the same example as above:
+Disintegrating brick A would cause all 6 other bricks to fall.
+Disintegrating brick F would cause only 1 other brick, G, to fall.
+Disintegrating any other brick would cause no other bricks to fall. So, in this example, the sum of the number of other bricks that would fall as a result of disintegrating each brick is 7.
+For each brick, determine how many other bricks would fall if that brick were disintegrated.
+What is the sum of the number of other bricks that would fall?
 */
 
 class Day22(val input: List<String>) {
@@ -136,7 +147,26 @@ class Day22(val input: List<String>) {
     }
 
     fun solution1(): Int {
-        return bricks.size - supported.values.filter { it.size == 1 }.map{ it.toSet() }.reduce(Set<Int>::union).size
+        return bricks.size - supported.values.filter { it.size == 1 }.map { it.toSet() }.reduce(Set<Int>::union).size
+    }
+
+    fun solution2(): Int {
+        return bricks.sumOf { brick ->
+            val falling = mutableSetOf(brick.id)
+            var nextBricks = supports.getOrDefault(brick.id, emptySet())
+
+            while (nextBricks.isNotEmpty()) {
+                nextBricks = buildSet {
+                    for (next in nextBricks) {
+                        if ((supported.getValue(next) - falling).isEmpty()) {
+                            falling += next
+                            addAll(supports.getOrDefault(next, emptySet()))
+                        }
+                    }
+                }
+            }
+            falling.size - 1
+        }
     }
 
     fun IntRange.size(): Int = last - start + 1
@@ -160,4 +190,5 @@ class Day22(val input: List<String>) {
 fun main() {
     val fileInput = File("src/main/kotlin/inputs/Day22.txt").readLines()
     println(Day22(fileInput).solution1())
+    println(Day22(fileInput).solution2())
 }
