@@ -59,6 +59,37 @@ In the example above, the longest hike you can take is marked with O, and your s
 #####################O#
 This hike contains 94 steps. (The other possible hikes you could have taken were 90, 86, 82, 82, and 74 steps long.)
 Find the longest hike you can take through the hiking trails listed on your map. How many steps long is the longest hike?
+
+--- Part Two ---
+As you reach the trailhead, you realize that the ground isn't as slippery as you expected; you'll have no problem climbing up the steep slopes.
+Now, treat all slopes as if they were normal paths (.). You still want to make sure you have the most scenic hike possible, so continue to ensure that you never step onto the same tile twice. What is the longest hike you can take?
+
+In the example above, this increases the longest hike to 154 steps:
+#S#####################
+#OOOOOOO#########OOO###
+#######O#########O#O###
+###OOOOO#.>OOO###O#O###
+###O#####.#O#O###O#O###
+###O>...#.#O#OOOOO#OOO#
+###O###.#.#O#########O#
+###OOO#.#.#OOOOOOO#OOO#
+#####O#.#.#######O#O###
+#OOOOO#.#.#OOOOOOO#OOO#
+#O#####.#.#O#########O#
+#O#OOO#...#OOO###...>O#
+#O#O#O#######O###.###O#
+#OOO#O>.#...>O>.#.###O#
+#####O#.#.###O#.#.###O#
+#OOOOO#...#OOO#.#.#OOO#
+#O#########O###.#.#O###
+#OOO###OOO#OOO#...#O###
+###O###O#O###O#####O###
+#OOO#OOO#O#OOO>.#.>O###
+#O###O###O#O###.#.#O###
+#OOOOO###OOO###...#OOO#
+#####################O#
+Find the longest hike you can take through the surprisingly dry hiking trails listed on your map. How many steps long is the longest hike?
+
 */
 
 class Day23(val input: List<String>) {
@@ -80,6 +111,48 @@ class Day23(val input: List<String>) {
                 }
             }
         )
+    }
+
+    fun solution2(): Int {
+        val junctions = mutableMapOf(
+            start to mutableListOf<Pair<Point2D, Int>>(),
+            end to mutableListOf()
+        )
+
+        for (row in input.indices) {
+            for (column in input[row].indices) {
+                if (input[row][column] == '.') {
+                    val point = Point2D(column, row)
+                    if (point.validNeighbours().size > 2)
+                        junctions[point] = mutableListOf()
+                }
+            }
+        }
+
+        for (junction in junctions.keys) {
+            var current = setOf(junction)
+            val visited = mutableSetOf(junction)
+            var distance = 0
+
+            while (current.isNotEmpty()) {
+                distance++
+                current = buildSet {
+                    for (curr in current) {
+                        curr.validNeighbours().filter { it !in visited }.forEach { n ->
+                            if (n in junctions)
+                                junctions.getValue(junction).add(n to distance)
+                            else {
+                                add(n)
+                                visited.add(n)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return findMax(current = start, visited = visited, getNeighbours = { current -> junctions.getValue(current) })
+
     }
 
     private fun findMax(
@@ -109,4 +182,5 @@ class Day23(val input: List<String>) {
 fun main() {
     val fileInput = File("src/main/kotlin/inputs/Day23.txt").readLines()
     println(Day23(fileInput).solution1())
+    println(Day23(fileInput).solution2())
 }
